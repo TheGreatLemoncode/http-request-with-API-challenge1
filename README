@@ -1,0 +1,10 @@
+This idea came to me like a thunderbolt (i should maybe watch the movie).
+"how can i connect to an account that is on a server ?"
+I know right ? It is no different from magic. how can the mail and password
+just turn into my 1000 hours play time on warframe ? So i thought and thought 
+and came to the conclusion that is an async call to the server with the informations 
+you gave as a POST request. The result is, if i'm not wrong, a sort of session key 
+that allow the game and the server to communicate between them. So this project is to 
+simulate a connection to a server using async methods and sort of keeping the connection 
+alive. First project and already tired.
+From your new friend the great lemon from HiLemonCode

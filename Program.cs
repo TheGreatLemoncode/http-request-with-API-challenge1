@@ -12,7 +12,7 @@ namespace httprequest_api
 {
     internal class Program
     {
-        const string BaseUrl = "http://127.0.0.1:5000/api";
+        const string BaseUrl = "http://127.0.0.1:5000/api/signup";
 
         // the client we're going to use during this test 
         static HttpClient client = new HttpClient();
@@ -40,12 +40,23 @@ namespace httprequest_api
 
             // Brand new day brand new me. Today we're working on the interface and data format.
             // Let's ask our user what he want to do with our GUI and decide what to do with a switch case 
-            int choice = Interface();
 
+            // The user information will be stock in this dictionary
+            Dictionary<string, string> informations = new Dictionary<string, string>();
+
+            int choice = Interface();
             switch (choice)
             {
                 case 1:
                     // if he want to sign up, we display the sign up page and get his informations
+                    informations = SignUpPage();
+                    // We successfully created a sign up page. now let's try to send it to our api and the api answer if 
+                    // the account exist already or not
+                    Console.WriteLine();
+                    string response = await PostRequest(BaseUrl + "/signup", informations);
+                    Console.WriteLine(response);
+                    // Beautiful, everything just work. In a way i can call it a day a wrap the challenge, but we can go even 
+                    // further beyond.
                     break;
 
                 case 2:
@@ -76,7 +87,7 @@ namespace httprequest_api
         /// <param name="url">target url</param>
         /// <param name="data">data to send</param>
         /// <returns>something random. just there to take place</returns>
-        static async Task<HttpContent> PostRequest(string url, object data)
+        static async Task<string> PostRequest(string url, object data)
         {
             // Change the data into json string
             string JsonData = JsonConvert.SerializeObject(data);
@@ -89,14 +100,12 @@ namespace httprequest_api
             {
                 string JSONrespmessage = await Response.Content.ReadAsStringAsync();
                 string respmessage = JsonConvert.DeserializeObject<string>(JSONrespmessage);
-                Console.WriteLine("Le code est ok \n le message est : " + respmessage);
+                return respmessage;
             }
             else
             {
-                Console.Write(Response.ReasonPhrase);
+                return "FAILED POST";
             }
-            // just junk
-            return Response.Content;
         }
 
         /// <summary>
@@ -123,7 +132,8 @@ namespace httprequest_api
             Console.Write("Password: ");
             string password = Console.ReadLine();
             Dictionary<string, string> information = new Dictionary<string, string>();
-            information.Add(password, usermail);
+            information.Add("password", password);
+            information.Add("mail",  usermail);
             return information;
         }
 

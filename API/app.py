@@ -34,13 +34,15 @@ def api_index():
     liste = ['banane', 'orange', 'pomme']
     return jsonify(liste)
 
-@app.route("/api/connexion", methods=['GET','POST'])
-def api_connexion():
+@app.route("/api/signup", methods=['POST'])
+def api_creation():
     """Route whose role will be to verify user information"""
-    if request.method == 'POST':
-        return "Post method done"
-    
-    return 'Get method done'
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify("The data did not arrive"), 400
+    print(data.get('password'))
+    print(data.get('mail'))
+    return jsonify('The data did arrive at the API'), 200
 
 if __name__ == '__main__':
     app.run('0.0.0.0')

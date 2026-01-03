@@ -41,17 +41,27 @@ def api_creation():
     
     if not data:
         return jsonify("The data did not arrive"), 400
-    
-    # print(data.get('password'))
-    # print(data.get('mail'))
-    with open('users.data', 'r') as f:
-        line = f.readline()
-        exist = False
-        while line is not None:
-            if data.get('mail') in line and data.get('password') in line:
-                exist = True 
 
     return jsonify('The data did arrive at the API'), 200
 
+@app.route("/api/login", methods=['POST'])
+def log_in():
+    """Route that deal with user log in"""
+    data = request.get_json(silent=True)
+    response = {}
+    if not data:
+        response['message'] = 'The post method failed'
+        response['connexion'] = False
+        return jsonify(response), 400
+    
+    if data.get('mail') == 'hilemoncode@gmail.com' and data.get('password') == 'thegreatlemon':
+        response['connexion'] = True
+        response['message'] = f'Bienvenu {data.get('mail')}'
+        return jsonify(response), 200
+    
+    response['connexion'] = False
+    response['message'] = 'connexion refused'
+    return jsonify(response), 200
+
 if __name__ == '__main__':
-    app.run('0.0.0.0')
+    app.run('0.0.0.0', debug=True)

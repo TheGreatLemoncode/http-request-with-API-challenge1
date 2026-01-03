@@ -12,7 +12,7 @@ namespace httprequest_api
 {
     internal class Program
     {
-        const string BaseUrl = "http://127.0.0.1:5000/api/signup";
+        static string BaseUrl = "http://127.0.0.1:5000/api/login";
 
         // the client we're going to use during this test 
         static HttpClient client = new HttpClient();
@@ -43,7 +43,7 @@ namespace httprequest_api
 
             // The user information will be stock in this dictionary
             Dictionary<string, string> informations = new Dictionary<string, string>();
-
+            Dictionary<string, object> response = new Dictionary<string, object>();
             int choice = Interface();
             switch (choice)
             {
@@ -53,13 +53,20 @@ namespace httprequest_api
                     // We successfully created a sign up page. now let's try to send it to our api and the api answer if 
                     // the account exist already or not
                     Console.WriteLine();
-                    string response = await PostRequest(BaseUrl + "/signup", informations);
-                    Console.WriteLine(response);
-                    // Beautiful, everything just work. In a way i can call it a day a wrap the challenge, but we can go even 
+                    response = await PostRequest(BaseUrl + "/signup", informations);
+                    Console.WriteLine(response["message"]);
+                    // Beautiful, everything just work. In a way i can call it a day and wrap the challenge, but we can go even 
                     // further beyond.
                     break;
 
                 case 2:
+                    // Let's fetch the user log in information with our login in page
+                    informations = LogInPage();
+                    // Let's now ask our API if those credentials are valid
+                    Console.WriteLine();
+                    response = await PostRequest(BaseUrl , informations);
+                    Console.WriteLine(response["message"]);
+                    Console.Write("Connexion status : " + response["connexion"]);
                     break;
             }
 
@@ -87,24 +94,31 @@ namespace httprequest_api
         /// <param name="url">target url</param>
         /// <param name="data">data to send</param>
         /// <returns>something random. just there to take place</returns>
-        static async Task<string> PostRequest(string url, object data)
+        static async Task<Dictionary<string, object>> PostRequest(string url, object data)
         {
+            // note: async methods can't return tuple
             // Change the data into json string
             string JsonData = JsonConvert.SerializeObject(data);
-            // prepare the http content to send
-            HttpContent content = new StringContent(JsonData, Encoding.UTF8, "application/json");
-            // Begin the request and wai for an answer
-            HttpResponseMessage Response = await client.PostAsync(BaseUrl, content);
-            // check the answer without throwing exception
-            if (Response.IsSuccessStatusCode)
+
+            try
             {
+                Console.WriteLine(url);
+                // prepare the http content to send
+                HttpContent content = new StringContent(JsonData, Encoding.UTF8, "application/json");
+                // Begin the request and wai for an answer
+                HttpResponseMessage Response = await client.PostAsync(BaseUrl, content);
+                // check the answer without throwing exception
+                Response.EnsureSuccessStatusCode();
+                // after some modification to the api, it now send dicts as response that i just need to parse to use
                 string JSONrespmessage = await Response.Content.ReadAsStringAsync();
-                string respmessage = JsonConvert.DeserializeObject<string>(JSONrespmessage);
-                return respmessage;
+                Dictionary<string, object> ResponseContent = JsonConvert.DeserializeObject<Dictionary<string, object>>(JSONrespmessage);
+                // Let's try this new data structure
+                return ResponseContent;
             }
-            else
+            catch (Exception ex)
             {
-                return "FAILED POST";
+                Console.WriteLine(ex.Message);
+                return null;
             }
         }
 
@@ -134,6 +148,20 @@ namespace httprequest_api
             Dictionary<string, string> information = new Dictionary<string, string>();
             information.Add("password", password);
             information.Add("mail",  usermail);
+            return information;
+        }
+
+        static Dictionary<string, string> LogInPage()
+        {
+            Console.Clear();
+            Console.WriteLine("==========Sign In page==========\n");
+            Console.Write("mail: ");
+            string usermail = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = Console.ReadLine();
+            Dictionary<string, string> information = new Dictionary<string, string>();
+            information.Add("password", password);
+            information.Add("mail", usermail);
             return information;
         }
 
